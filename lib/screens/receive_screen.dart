@@ -12,81 +12,75 @@ class ReceiveScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final transferService = context.read<TransferService>();
 
-    return Scaffold(
-      extendBody: true,
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(title: const Text('传输队列')),
-      body: StreamBuilder<List<Transfer>>(
-        stream: transferService.transfers,
-        initialData: transferService.currentTransfers,
-        builder: (context, snapshot) {
-          final transfers = snapshot.data ?? [];
-          final pending =
-              transfers.where((t) => t.status == TransferStatus.pending).toList();
-          final active =
-              transfers.where((t) => t.status != TransferStatus.pending).toList();
+    return StreamBuilder<List<Transfer>>(
+      stream: transferService.transfers,
+      initialData: transferService.currentTransfers,
+      builder: (context, snapshot) {
+        final transfers = snapshot.data ?? [];
+        final pending =
+            transfers.where((t) => t.status == TransferStatus.pending).toList();
+        final active =
+            transfers.where((t) => t.status != TransferStatus.pending).toList();
 
-          if (transfers.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.inbox_rounded,
-                    size: 64,
+        if (transfers.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.inbox_rounded,
+                  size: 64,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.3),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  '暂无传输任务',
+                  style: TextStyle(
+                    fontSize: 16,
                     color: Theme.of(context)
                         .colorScheme
                         .onSurface
-                        .withValues(alpha: 0.3),
+                        .withValues(alpha: 0.6),
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    '暂无传输任务',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.6),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return ListView(
-            padding: const EdgeInsets.only(top: 8, bottom: 96),
-            children: [
-              if (pending.isNotEmpty) ...[
-                _sectionHeader(context, '待处理'),
-                ...pending.map((t) => _PendingTransferCard(transfer: t)),
+                ),
               ],
-              if (active.isNotEmpty) ...[
-                _sectionHeader(context, '传输记录'),
-                ...active.map((t) {
-                  final icon = t.status == TransferStatus.completed
-                      ? Icons.check_circle_rounded
-                      : t.status == TransferStatus.failed
-                          ? Icons.error_rounded
-                          : Icons.sync_rounded;
-                  final color = t.status == TransferStatus.completed
-                      ? Colors.green
-                      : t.status == TransferStatus.failed
-                          ? Colors.red
-                          : Colors.blue;
-                  return ListTile(
-                    leading: Icon(icon, color: color),
-                    title: Text(t.fileName),
-                    subtitle:
-                        Text('${t.fileSizeText} · ${t.remoteDeviceName ?? ""}'),
-                  );
-                }),
-              ],
-            ],
+            ),
           );
-        },
-      ),
+        }
+
+        return ListView(
+          padding: const EdgeInsets.only(top: 8, bottom: 96),
+          children: [
+            if (pending.isNotEmpty) ...[
+              _sectionHeader(context, '待处理'),
+              ...pending.map((t) => _PendingTransferCard(transfer: t)),
+            ],
+            if (active.isNotEmpty) ...[
+              _sectionHeader(context, '传输记录'),
+              ...active.map((t) {
+                final icon = t.status == TransferStatus.completed
+                    ? Icons.check_circle_rounded
+                    : t.status == TransferStatus.failed
+                        ? Icons.error_rounded
+                        : Icons.sync_rounded;
+                final color = t.status == TransferStatus.completed
+                    ? Colors.green
+                    : t.status == TransferStatus.failed
+                        ? Colors.red
+                        : Colors.blue;
+                return ListTile(
+                  leading: Icon(icon, color: color),
+                  title: Text(t.fileName),
+                  subtitle: Text('${t.fileSizeText} · ${t.remoteDeviceName ?? ""}'),
+                );
+              }),
+            ],
+          ],
+        );
+      },
     );
   }
 
