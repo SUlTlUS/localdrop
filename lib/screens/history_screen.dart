@@ -33,76 +33,74 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBody: true,
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(title: const Text('传输历史')),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _history.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.history_rounded,
-                        size: 64,
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withValues(alpha: 0.3),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        '暂无传输记录',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withValues(alpha: 0.6),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.only(top: 8, bottom: 96),
-                  itemCount: _history.length,
-                  itemBuilder: (context, index) {
-                    final t = _history[index];
-                    final icon = t.status.name == 'completed'
-                        ? Icons.check_circle_rounded
-                        : Icons.error_rounded;
-                    final color =
-                        t.status.name == 'completed' ? Colors.green : Colors.red;
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 4,
-                      ),
-                      child: GlassListTile(
-                        leading: Icon(icon, color: color, size: 22),
-                        title: Text(
-                          t.fileName,
-                          style: const TextStyle(fontWeight: FontWeight.w500),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        subtitle: Text(
-                          '${t.isIncoming ? "接收自" : "发送至"} ${t.remoteDeviceName ?? "未知"} · ${t.fileSizeText} · ${_fmt(t.createdAt)}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withValues(alpha: 0.6),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
+    if (_loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_history.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.history_rounded,
+              size: 64,
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.3),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '暂无传输记录',
+              style: TextStyle(
+                fontSize: 16,
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.6),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.only(top: 8, bottom: 96),
+      itemCount: _history.length,
+      itemBuilder: (context, index) {
+        final t = _history[index];
+        final icon = t.status.name == 'completed'
+            ? Icons.check_circle_rounded
+            : Icons.error_rounded;
+        final color = t.status.name == 'completed' ? Colors.green : Colors.red;
+        return Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 4,
+          ),
+          child: GlassListTile(
+            leading: Icon(icon, color: color, size: 22),
+            title: Text(
+              t.fileName,
+              style: const TextStyle(fontWeight: FontWeight.w500),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            subtitle: Text(
+              '${t.isIncoming ? "接收自" : "发送至"} ${t.remoteDeviceName ?? "未知"} · ${t.fileSizeText} · ${_fmt(t.createdAt)}',
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.6),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
