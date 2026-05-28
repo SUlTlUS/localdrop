@@ -31,12 +31,14 @@ class TransferService {
       final fileName = request.headers['x-file-name']?.first ?? 'unknown';
       final fileSize = int.tryParse(request.headers['x-file-size']?.first ?? '0') ?? 0;
       final senderId = request.headers['x-sender-id']?.first;
+      final senderName = request.headers['x-sender-name']?.first;
 
       final transfer = Transfer(
         id: const Uuid().v4(),
         fileName: fileName,
         fileSize: fileSize,
         remoteDeviceId: senderId,
+        remoteDeviceName: senderName,
         isIncoming: true,
         status: TransferStatus.pending,
       );
@@ -85,7 +87,14 @@ class TransferService {
     }
   }
 
-  Future<void> sendFile(String filePath, String deviceIp, int devicePort) async {
+  Future<void> sendFile(
+    String filePath,
+    String deviceIp,
+    int devicePort, {
+    String? remoteDeviceId,
+    String? remoteDeviceName,
+    String? senderName,
+  }) async {
     final file = File(filePath);
     if (!await file.exists()) return;
 
@@ -96,6 +105,8 @@ class TransferService {
       id: const Uuid().v4(),
       fileName: fileName,
       fileSize: fileSize,
+      remoteDeviceId: remoteDeviceId,
+      remoteDeviceName: remoteDeviceName,
       isIncoming: false,
       status: TransferStatus.transferring,
     );
@@ -111,6 +122,9 @@ class TransferService {
       request.headers.set('x-file-name', fileName);
       request.headers.set('x-file-size', fileSize.toString());
       request.headers.set('x-sender-id', deviceId);
+      if (senderName != null && senderName.isNotEmpty) {
+        request.headers.set('x-sender-name', senderName);
+      }
       request.contentLength = fileSize;
 
       final bytes = await file.readAsBytes();
