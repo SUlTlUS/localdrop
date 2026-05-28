@@ -66,7 +66,7 @@ class _AppShellState extends State<AppShell> {
 
   String get _title => switch (_currentIndex) {
         0 => 'LocalDrop',
-        1 => '传输队列',
+        1 => '设备消息',
         _ => '传输历史',
       };
 
@@ -113,9 +113,9 @@ class _AppShellState extends State<AppShell> {
                   label: '设备',
                 ),
                 GlassBottomBarTab(
-                  icon: Icon(Icons.swap_horiz_rounded),
-                  activeIcon: Icon(Icons.swap_horiz_rounded),
-                  label: '传输',
+                  icon: Icon(Icons.forum_rounded),
+                  activeIcon: Icon(Icons.forum_rounded),
+                  label: '消息',
                 ),
                 GlassBottomBarTab(
                   icon: Icon(Icons.history_rounded),
