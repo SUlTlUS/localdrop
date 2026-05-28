@@ -51,7 +51,6 @@ class AppShell extends StatefulWidget {
 }
 
 class _AppShellState extends State<AppShell> {
-  final _backgroundKey = GlobalKey();
   int _currentIndex = 0;
 
   final _screens = const [
@@ -60,23 +59,33 @@ class _AppShellState extends State<AppShell> {
     HistoryScreen(),
   ];
 
+  String get _title => switch (_currentIndex) {
+        0 => 'LocalDrop',
+        1 => '传输队列',
+        _ => '传输历史',
+      };
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final iconColor = isDark ? Colors.white : Colors.black87;
 
     return GlassPage(
-      // Same structure as the package demos: GlassPage owns the background,
-      // Scaffold extends behind the bar, and GlassBottomBar lives directly in
-      // Scaffold.bottomNavigationBar. The RepaintBoundary key is passed to the
-      // bar so the Skia/Web refraction shader has a concrete source to sample.
-      background: RepaintBoundary(
-        key: _backgroundKey,
-        child: const AppBackground(child: SizedBox.expand()),
-      ),
+      background: const AppBackground(child: SizedBox.expand()),
       statusBarStyle: GlassStatusBarStyle.auto,
       child: Scaffold(
         extendBody: true,
         backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: Text(_title),
+          actions: [
+            if (_currentIndex == 0)
+              GlassIconButton(
+                icon: const Icon(Icons.refresh_rounded, size: 20),
+                onPressed: () {},
+              ),
+          ],
+        ),
         body: IndexedStack(
           index: _currentIndex,
           children: _screens,
@@ -84,30 +93,9 @@ class _AppShellState extends State<AppShell> {
         bottomNavigationBar: GlassBottomBar(
           selectedIndex: _currentIndex,
           onTabSelected: (index) => setState(() => _currentIndex = index),
-          quality: GlassQuality.standard,
-          backgroundKey: _backgroundKey,
-          barHeight: 56,
-          iconSize: 22,
-          labelFontSize: 10,
-          iconLabelSpacing: 2,
-          horizontalPadding: 16,
-          verticalPadding: 12,
-          spacing: 0,
-
-          // Match the official demo pattern: keep selected and unselected
-          // colors visibly different, and do not override textStyle. The
-          // bottom bar renders a second selected tab layer inside the indicator;
-          // a fixed textStyle makes that foreground layer look identical.
-          selectedIconColor: Colors.white,
-          unselectedIconColor:
-              (isDark ? Colors.white : Colors.black87).withValues(alpha: 0.45),
+          selectedIconColor: iconColor,
+          unselectedIconColor: iconColor.withValues(alpha: 0.45),
           indicatorColor: Colors.blue.withValues(alpha: 0.2),
-          indicatorSettings: const LiquidGlassSettings(
-            thickness: 30,
-            blur: 3,
-            chromaticAberration: 0.3,
-            refractiveIndex: 1.59,
-          ),
           maskingQuality: MaskingQuality.high,
           tabs: const [
             GlassBottomBarTab(
