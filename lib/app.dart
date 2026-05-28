@@ -51,6 +51,7 @@ class AppShell extends StatefulWidget {
 }
 
 class _AppShellState extends State<AppShell> {
+  final _backgroundKey = GlobalKey();
   int _currentIndex = 0;
 
   final _screens = const [
@@ -67,8 +68,12 @@ class _AppShellState extends State<AppShell> {
     return GlassPage(
       // Same structure as the package demos: GlassPage owns the background,
       // Scaffold extends behind the bar, and GlassBottomBar lives directly in
-      // Scaffold.bottomNavigationBar.
-      background: const AppBackground(child: SizedBox.expand()),
+      // Scaffold.bottomNavigationBar. The RepaintBoundary key is passed to the
+      // bar so the Skia/Web refraction shader has a concrete source to sample.
+      background: RepaintBoundary(
+        key: _backgroundKey,
+        child: const AppBackground(child: SizedBox.expand()),
+      ),
       statusBarStyle: GlassStatusBarStyle.auto,
       child: Scaffold(
         extendBody: true,
@@ -80,6 +85,8 @@ class _AppShellState extends State<AppShell> {
         bottomNavigationBar: GlassBottomBar(
           selectedIndex: _currentIndex,
           onTabSelected: (index) => setState(() => _currentIndex = index),
+          quality: GlassQuality.standard,
+          backgroundKey: _backgroundKey,
           barHeight: 56,
           iconSize: 22,
           labelFontSize: 10,
@@ -90,6 +97,12 @@ class _AppShellState extends State<AppShell> {
           selectedIconColor: iconColor,
           unselectedIconColor: iconColor.withValues(alpha: 0.5),
           indicatorColor: iconColor.withValues(alpha: isDark ? 0.18 : 0.12),
+          indicatorSettings: const LiquidGlassSettings(
+            thickness: 30,
+            blur: 3,
+            chromaticAberration: 0.3,
+            refractiveIndex: 1.59,
+          ),
           maskingQuality: MaskingQuality.high,
           textStyle: TextStyle(
             fontSize: 10,
