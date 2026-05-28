@@ -62,12 +62,7 @@ class DiscoveryService {
     final socket = _socket;
     if (socket == null) return;
 
-    final data = jsonEncode({
-      'id': deviceId,
-      'name': deviceName,
-      'port': servicePort,
-    });
-    final encoded = utf8.encode('$_discoveryMessage|$data');
+    final encoded = _packetBytes(kind: 'announce');
 
     final targets = await _broadcastTargets();
     for (final target in targets) {
@@ -78,6 +73,25 @@ class DiscoveryService {
         // rest of the targets instead of failing the whole discovery pass.
       }
     }
+  }
+
+  List<int> _packetBytes({required String kind}) {
+    final data = jsonEncode({
+      'kind': kind,
+      'id': deviceId,
+      'name': deviceName,
+      'port': servicePort,
+    });
+    return utf8.encode('$_discoveryMessage|$data');
+  }
+
+  void _replyTo(InternetAddress address) {
+    final socket = _socket;
+    if (socket == null) return;
+
+    try {
+      socket.send(_packetBytes(kind: 'reply'), address, _discoveryPort);
+    } catch (_) {}
   }
 
   Future<Set<InternetAddress>> _broadcastTargets() async {
@@ -142,6 +156,14 @@ class DiscoveryService {
         lastSeen: DateTime.now(),
       );
       _deviceController.add(currentDevices);
+
+      // Broadcast can be asymmetric: PC may hear Android while Android cannot
+      // hear PC broadcasts. Reply by unicast so the sender can still discover
+      // this device without relying on a second broadcast making it back.
+      final kind = data['kind'] as String? ?? 'announce';
+      if (kind != 'reply') {
+        _replyTo(datagram.address);
+      }
     } catch (_) {}
   }
 
