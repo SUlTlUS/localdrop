@@ -48,6 +48,11 @@ class DiscoveryService {
     _broadcast();
   }
 
+  void refresh() {
+    _broadcast();
+    _cleanupOffline();
+  }
+
   void _broadcast() {
     if (_socket == null) return;
     final data = jsonEncode({
