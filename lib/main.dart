@@ -25,7 +25,9 @@ void main() async {
 
   runApp(
     LiquidGlassWidgets.wrap(
-      adaptiveQuality: true,
+      // Keep the premium/standard settings requested by the bottom bar instead
+      // of allowing adaptive quality to downgrade them on desktop or slower GPUs.
+      adaptiveQuality: false,
       child: MultiProvider(
         providers: [
           Provider<DiscoveryService>.value(value: discoveryService),
