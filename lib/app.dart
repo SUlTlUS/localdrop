@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
+import 'package:provider/provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/receive_screen.dart';
 import 'screens/history_screen.dart';
+import 'services/discovery_service.dart';
 import 'widgets/app_background.dart';
 
 class LocalDropApp extends StatelessWidget {
@@ -51,6 +53,9 @@ class AppShell extends StatefulWidget {
 }
 
 class _AppShellState extends State<AppShell> {
+  static const double _minBottomBarWidth = 320;
+  static const double _maxBottomBarWidth = 520;
+
   int _currentIndex = 0;
 
   final _screens = const [
@@ -69,6 +74,7 @@ class _AppShellState extends State<AppShell> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final iconColor = isDark ? Colors.white : Colors.black87;
+    final discoveryService = context.read<DiscoveryService>();
 
     return GlassPage(
       background: const AppBackground(child: SizedBox.expand()),
@@ -76,44 +82,49 @@ class _AppShellState extends State<AppShell> {
       child: Scaffold(
         extendBody: true,
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          title: Text(_title),
-          actions: [
-            if (_currentIndex == 0)
-              GlassIconButton(
-                icon: const Icon(Icons.refresh_rounded, size: 20),
-                onPressed: () {},
-              ),
-          ],
-        ),
+        appBar: AppBar(title: Text(_title)),
         body: IndexedStack(
           index: _currentIndex,
           children: _screens,
         ),
-        bottomNavigationBar: GlassBottomBar(
-          selectedIndex: _currentIndex,
-          onTabSelected: (index) => setState(() => _currentIndex = index),
-          selectedIconColor: iconColor,
-          unselectedIconColor: iconColor.withValues(alpha: 0.45),
-          indicatorColor: Colors.blue.withValues(alpha: 0.2),
-          maskingQuality: MaskingQuality.high,
-          tabs: const [
-            GlassBottomBarTab(
-              icon: Icon(Icons.devices_rounded),
-              activeIcon: Icon(Icons.devices_rounded),
-              label: '设备',
+        bottomNavigationBar: Align(
+          alignment: Alignment.bottomCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              minWidth: _minBottomBarWidth,
+              maxWidth: _maxBottomBarWidth,
             ),
-            GlassBottomBarTab(
-              icon: Icon(Icons.swap_horiz_rounded),
-              activeIcon: Icon(Icons.swap_horiz_rounded),
-              label: '传输',
+            child: GlassBottomBar(
+              selectedIndex: _currentIndex,
+              onTabSelected: (index) => setState(() => _currentIndex = index),
+              selectedIconColor: iconColor,
+              unselectedIconColor: iconColor.withValues(alpha: 0.45),
+              indicatorColor: iconColor.withValues(alpha: isDark ? 0.18 : 0.12),
+              maskingQuality: MaskingQuality.high,
+              extraButton: GlassBottomBarExtraButton(
+                icon: const Icon(Icons.refresh_rounded),
+                label: '刷新',
+                onTap: discoveryService.refresh,
+              ),
+              tabs: const [
+                GlassBottomBarTab(
+                  icon: Icon(Icons.devices_rounded),
+                  activeIcon: Icon(Icons.devices_rounded),
+                  label: '设备',
+                ),
+                GlassBottomBarTab(
+                  icon: Icon(Icons.swap_horiz_rounded),
+                  activeIcon: Icon(Icons.swap_horiz_rounded),
+                  label: '传输',
+                ),
+                GlassBottomBarTab(
+                  icon: Icon(Icons.history_rounded),
+                  activeIcon: Icon(Icons.history_rounded),
+                  label: '历史',
+                ),
+              ],
             ),
-            GlassBottomBarTab(
-              icon: Icon(Icons.history_rounded),
-              activeIcon: Icon(Icons.history_rounded),
-              label: '历史',
-            ),
-          ],
+          ),
         ),
       ),
     );
