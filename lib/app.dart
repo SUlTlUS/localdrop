@@ -63,7 +63,6 @@ class _AppShellState extends State<AppShell> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final iconColor = isDark ? Colors.white : Colors.black87;
 
     return GlassPage(
       // Same structure as the package demos: GlassPage owns the background,
@@ -94,9 +93,15 @@ class _AppShellState extends State<AppShell> {
           horizontalPadding: 16,
           verticalPadding: 12,
           spacing: 0,
-          selectedIconColor: iconColor,
-          unselectedIconColor: iconColor.withValues(alpha: 0.5),
-          indicatorColor: iconColor.withValues(alpha: isDark ? 0.18 : 0.12),
+
+          // Match the official demo pattern: keep selected and unselected
+          // colors visibly different, and do not override textStyle. The
+          // bottom bar renders a second selected tab layer inside the indicator;
+          // a fixed textStyle makes that foreground layer look identical.
+          selectedIconColor: Colors.white,
+          unselectedIconColor:
+              (isDark ? Colors.white : Colors.black87).withValues(alpha: 0.45),
+          indicatorColor: Colors.blue.withValues(alpha: 0.2),
           indicatorSettings: const LiquidGlassSettings(
             thickness: 30,
             blur: 3,
@@ -104,11 +109,6 @@ class _AppShellState extends State<AppShell> {
             refractiveIndex: 1.59,
           ),
           maskingQuality: MaskingQuality.high,
-          textStyle: TextStyle(
-            fontSize: 10,
-            color: iconColor,
-            fontWeight: FontWeight.w500,
-          ),
           tabs: const [
             GlassBottomBarTab(
               icon: Icon(Icons.devices_rounded),
